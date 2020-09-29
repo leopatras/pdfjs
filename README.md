@@ -21,3 +21,8 @@ Running in GDC via GAS and expose the PDF as public resource
 ```
   USE_PUBLIC=1 GDC=<yourgdcexecutable> make webrun
 ```
+
+Just run it in GBC
+```
+  make webrun
+```
