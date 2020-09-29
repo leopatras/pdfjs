@@ -1,0 +1,12 @@
+*** webcomponents/web/web.html.orig	Fri Sep 25 20:23:54 2020
+--- webcomponents/web/web.html	Fri Sep 25 20:24:36 2020
+***************
+*** 38,43 ****
+--- 38,44 ----
+  
+  
+    <script src="viewer.js"></script>
++   <script src="myGICAPI.js"></script>
+  
+    </head>
+  
