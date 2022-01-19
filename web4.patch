@@ -1,0 +1,32 @@
+*** webcomponents/web/web.html.orig	2022-01-19 15:33:59.000000000 +0100
+--- webcomponents/web/web.html	2022-01-19 15:34:24.000000000 +0100
+***************
+*** 43,48 ****
+--- 43,49 ----
+  
+      <script src="debugger.js"></script>
+      <script src="viewer.js"></script>
++     <script src="myGICAPI.js"></script>
+  
+    </head>
+
+*** webcomponents/web/viewer.js.orig	2022-01-19 15:55:48.000000000 +0100
+--- webcomponents/web/viewer.js	2022-01-19 15:56:10.000000000 +0100
+***************
+*** 27,33 ****
+  
+  'use strict';
+  
+! var DEFAULT_URL = 'compressed.tracemonkey-pldi-09.pdf';
+  var DEFAULT_SCALE_DELTA = 1.1;
+  var MIN_SCALE = 0.25;
+  var MAX_SCALE = 10.0;
+--- 27,33 ----
+  
+  'use strict';
+  
+! var DEFAULT_URL = null;
+  var DEFAULT_SCALE_DELTA = 1.1;
+  var MIN_SCALE = 0.25;
+  var MAX_SCALE = 10.0;
+  

@@ -16,9 +16,11 @@ GRID
 [                                                                                         ]
 [                                                                                         ]
 [                                                                                         ]
+[w2                                                                                       ]
 }
 END
 ATTRIBUTES
 file=FORMONLY.file;
 url=FORMONLY.url;
-WEBCOMPONENT w=FORMONLY.w,COMPONENTTYPE="web",SIZEPOLICY=FIXED,STRETCH=BOTH;
+WEBCOMPONENT w=FORMONLY.w,SIZEPOLICY=FIXED,STRETCH=BOTH; --URL based (note the missing component)
+WEBCOMPONENT w2=FORMONLY.w2,SIZEPOLICY=FIXED,COMPONENTTYPE="web",STRETCH=X,HIDDEN; --compo based

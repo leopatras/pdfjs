@@ -79,3 +79,7 @@ function getCreator()
 function getError() {
   return _error;
 }
+
+function getUrl() {
+  return window.location.href;
+}

@@ -15,36 +15,39 @@ run: all
 
 
 #rule called by pdfjs.4gl
-download_and_patch: webcomponents webcomponents/web/web.html 
+build_and_patch: webcomponents webcomponents/web/web.html
+	-git submodule init
+	-git submodule update
 
-#small trick, we move the pdf.js-gh-pages dir into a webcomponent dir
-webcomponents: pdf.js-gh-pages.zip
-	unzip pdf.js-gh-pages.zip
+
+webcomponents: pdf.js
 	rm -rf webcomponents
-	mv pdf.js-gh-pages webcomponents
-	rm -rf webcomponents/web 
-	rm -rf webcomponents/build
-	mv webcomponents/es5/web webcomponents/web
-	mv webcomponents/es5/build webcomponents/build
-
-#download the distrib
-pdf.js-gh-pages.zip:
-	curl -L -c cookie.txt https://github.com/mozilla/pdf.js/archive/gh-pages.zip >$@
+#       note you need node and npm for that and 'shelljs' but anyway gbc folks shouldn't have a problem with that
+	cd pdf.js && npm install shelljs && node make generic && cd ..
+	mkdir webcomponents
+	cp -a pdf.js/build/generic/web/ webcomponents/web/
+	cp -a pdf.js/build/generic/build/ webcomponents/build/
 
 #we use the original viewer page and inject our gICAPI boiler plate script
 webcomponents/web/web.html: webcomponents webcomponents/web/viewer.html
 	cp webcomponents/web/viewer.html webcomponents/web/web.html
-	patch -p0 <web3.patch
-	cp myGICAPI.js webcomponents/web
+	patch -p0 <web4.patch
+	cp myGICAPI.js webcomponents/web/
 
 fglwebrun:
 	git clone https://github.com/FourjsGenero/tool_fglwebrun.git fglwebrun
 
-webrun: all fglwebrun download_and_patch
-	#if [ -z $(GDC) ]; then echo "GDC executable not set"; exit 1; fi
+webrun: all fglwebrun build_and_patch
 	fglwebrun/fglwebrun pdfjs
+
+gdcwebrun: all fglwebrun build_and_patch
+	GDC=1 fglwebrun/fglwebrun pdfjs
 
 clean:
 	rm -f *.42?
 	rm -rf webcomponents fglwebrun
 	rm -f  *.zip cookie.txt
+
+distclean: clean
+	cd pdf.js && git clean -fdx && git checkout package.json
+	
