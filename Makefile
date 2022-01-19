@@ -15,12 +15,13 @@ run: all
 
 
 #rule called by pdfjs.4gl
-build_and_patch: webcomponents webcomponents/web/web.html
+build_and_patch: pdf.js/src webcomponents webcomponents/web/web.html
+
+pdf.js/src:
 	-git submodule init
 	-git submodule update
 
-
-webcomponents: pdf.js
+webcomponents: pdf.js/src
 	rm -rf webcomponents
 #       note you need node and npm for that and 'shelljs' but anyway gbc folks shouldn't have a problem with that
 	cd pdf.js && npm install shelljs && node make generic && cd ..
