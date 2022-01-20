@@ -3,7 +3,7 @@
 Prerequisites (server side)
   * gnu make 
   * patch
-  * curl
+  * node.js and npm
   * bash
 
 Running in GDC
@@ -13,14 +13,9 @@ Running in GDC
 
 Running in GDC via GAS
 ```
-  GDC=<yourgdcexecutable> make webrun
+  make gdcwebrun
 ```
 This assumes FGLASDIR is set and the GAS/GDC/fglrun are on the same machine
-
-Running in GDC via GAS and expose the PDF as public resource
-```
-  USE_PUBLIC=1 GDC=<yourgdcexecutable> make webrun
-```
 
 Just run it in GBC
 ```
