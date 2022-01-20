@@ -9,24 +9,6 @@ MAIN
   CALL check_prerequisites()
   OPEN FORM f FROM "pdfjs"
   DISPLAY FORM f
-  #we display web.html in a *URL based* component
-  #because of GDC-4402
-  IF (gasloc
-      := fgl_getenv("FGL_VMPROXY_WEB_COMPONENT_LOCATION")) IS NOT NULL THEN
-    LET url = gasloc, "/web/web.html"
-    DISPLAY "url:", url
-  ELSE
-    --direct mode:
-    --we use the hidden component based webcomponent to retrieve the URL
-    --for the URL based component
-    --this is admittedly a very ugly hack and surrounds GDC-4402
-    DISPLAY "direct mode:need hack"
-    CALL ui.interface.frontcall(
-        "webcomponent", "call", ["formonly.w2", "getUrl"], [url])
-  END IF
-  DISPLAY "url of url based compo:", url
-  MESSAGE "url of url based compo:", url
-  DISPLAY url TO w
   MENU
     BEFORE MENU
       CALL DIALOG.setActionHidden("error", 1)
