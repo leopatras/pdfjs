@@ -4,23 +4,12 @@ GRID
  File[file                                                                                ]
  URL [url                                                                                 ]
 [w                                                                                        ]
-[                                                                                         ]
-[                                                                                         ]
-[                                                                                         ]
-[                                                                                         ]
-[                                                                                         ]
-[                                                                                         ]
-[                                                                                         ]
-[                                                                                         ]
-[                                                                                         ]
-[                                                                                         ]
-[                                                                                         ]
-[                                                                                         ]
 [w2                                                                                       ]
 }
 END
+#[w2                                                                                       ]
 ATTRIBUTES
 file=FORMONLY.file;
 url=FORMONLY.url;
-WEBCOMPONENT w=FORMONLY.w,SIZEPOLICY=FIXED,STRETCH=BOTH; --URL based (note the missing component)
-WEBCOMPONENT w2=FORMONLY.w2,SIZEPOLICY=FIXED,COMPONENTTYPE="web",STRETCH=X,HIDDEN; --compo based
+WEBCOMPONENT w=FORMONLY.w,SIZEPOLICY=FIXED,STRETCH=BOTH,HEIGHT=10 LINES,HIDDEN; --URL based (note the missing component)
+WEBCOMPONENT w2=FORMONLY.w2,SIZEPOLICY=FIXED,COMPONENTTYPE="web",HEIGHT=10 lines,STRETCH=BOTH; --compo based

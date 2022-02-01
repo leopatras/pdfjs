@@ -2,31 +2,56 @@ IMPORT util
 IMPORT os
 CONSTANT TMK = "compressed.tracemonkey-pldi-09.pdf"
 CONSTANT CP2PUBLIC = FALSE
+DEFINE gICAPI BOOLEAN
 MAIN
   DEFINE w, err, creator, author, gasloc, origin, url STRING
+  DEFINE versionStr STRING
   DEFINE version FLOAT
   DEFINE args DYNAMIC ARRAY OF STRING
+  DEFINE win ui.Window
+  DEFINE frm ui.Form
+  DEFINE subMinor INT
   CALL check_prerequisites()
+  --CALL ui.Interface.frontCall("qa","clearWebCache",[],[])
+  LET versionStr = ui.Interface.getFrontEndVersion()
+  DISPLAY "versionStr:", versionStr, ",fe:", ui.Interface.getFrontEndName()
+  CALL parseVersion(versionStr) RETURNING version, subMinor
+  DISPLAY "version:", version, ",subMinor:", subMinor
+
+  LET gICAPI = TRUE
+  IF ui.Interface.getFrontEndName() == "GDC"
+      AND ((version == 3.2 AND subMinor < 21) OR (version < 3.2)) THEN
+    DISPLAY "GDC<=3.20.21"
+    LET gICAPI = FALSE --we need to use URL based
+  END IF
   OPEN FORM f FROM "pdfjs"
   DISPLAY FORM f
-  #we display web.html in a *URL based* component
-  #because of GDC-4402
-  IF (gasloc
-      := fgl_getenv("FGL_VMPROXY_WEB_COMPONENT_LOCATION")) IS NOT NULL THEN
-    LET url = gasloc, "/web/web.html"
-    DISPLAY "url:", url
+  IF gICAPI THEN
+    MESSAGE "gICAPI based webco taken"
   ELSE
-    --direct mode:
-    --we use the hidden component based webcomponent to retrieve the URL
-    --for the URL based component
-    --this is admittedly a very ugly hack and surrounds GDC-4402
-    DISPLAY "direct mode:need hack"
-    CALL ui.interface.frontcall(
-        "webcomponent", "call", ["formonly.w2", "getUrl"], [url])
+    LET win = ui.Window.getCurrent()
+    LET frm = win.getForm()
+    CALL frm.setFieldHidden("formonly.w", FALSE) --show URL based
+    CALL frm.setFieldHidden("formonly.w2", TRUE) --hide compo based
+    #we display web.html in a *URL based* component
+    #because of GDC-4402
+    IF (gasloc
+        := fgl_getenv("FGL_VMPROXY_WEB_COMPONENT_LOCATION")) IS NOT NULL THEN
+      LET url = gasloc, "/web/web.html"
+      DISPLAY "url:", url
+    ELSE
+      --direct mode:
+      --we use the hidden component based webcomponent to retrieve the URL
+      --for the URL based component
+      --this is admittedly a very ugly hack and surrounds GDC-4402
+      DISPLAY "direct mode:need hack"
+      CALL ui.interface.frontcall(
+          "webcomponent", "call", ["formonly.w2", "getUrl"], [url])
+    END IF
+    DISPLAY "url of url based compo:", url
+    MESSAGE "url of url based compo:", url
+    DISPLAY url TO w
   END IF
-  DISPLAY "url of url based compo:", url
-  MESSAGE "url of url based compo:", url
-  DISPLAY url TO w
   MENU
     BEFORE MENU
       CALL DIALOG.setActionHidden("error", 1)
@@ -91,7 +116,10 @@ FUNCTION displayPDF(fname)
   END CASE
   DISPLAY remoteName TO url
   CALL ui.interface.frontcall(
-      "webcomponent", "call", ["formonly.w", "displayPDF", remoteName], [])
+      "webcomponent",
+      "call",
+      [IIF(gICAPI, "formonly.w2", "formonly.w"), "displayPDF", remoteName],
+      [])
 END FUNCTION
 
 FUNCTION copyToPublic(fname)
@@ -156,4 +184,61 @@ FUNCTION check_prerequisites()
     DISPLAY "SKIP program: make_build_patch failed"
     EXIT PROGRAM 1
   END IF
+END FUNCTION
+
+FUNCTION parseVersion(version STRING)
+  DEFINE fversion, testversion FLOAT
+  DEFINE parsedVersion STRING
+  DEFINE pointpos, major, idx, len, subMinor INTEGER
+  DEFINE s STRING
+  LET pointpos = version.getIndexOf(".", 1)
+  IF pointpos == 0 OR pointpos = 1 THEN
+    --version string did not contain a '.' or no major number
+    CALL myErr(SFMT("parseVersion: no valid version (wrong dot):%1", version))
+  ELSE
+    LET major = version.subString(1, pointpos - 1)
+    IF major IS NULL
+        OR major
+            > 100 THEN --one needs to adjust the 100 hopefully only after 300 years
+      CALL myErr(
+          SFMT("parseVersion: no valid major number:'%1' in version:%2",
+              version.subString(1, pointpos - 1), version))
+    END IF
+  END IF
+  --go a long as possible thru the string after '.' and remember the last
+  --valid conversion, so it doesn't matter if a '.' or something else is right hand side of major.minor
+  LET idx = 1
+  LET fversion = NULL
+  WHILE (testversion := version.subString(1, pointpos + idx)) IS NOT NULL
+      AND pointpos + idx <= version.getLength()
+    LET fversion = testversion
+    --DISPLAY "fversion:",fversion," out of:",version.subString(1,pointpos+idx)
+    LET idx = idx + 1
+  END WHILE
+  IF fversion IS NULL OR fversion == 0.0 THEN --we had no valid conversion
+    CALL myErr(SFMT("parseVersion: can't convert to float:%1", version))
+  END IF
+  LET parsedVersion = fversion
+  LET len = parsedVersion.getLength()
+  IF (idx := version.getIndexOf(".", len + 1)) > 0 THEN
+    LET s = version.subString(idx + 1, idx + 2)
+    DISPLAY "s:", s
+    LET subMinor = version.subString(idx + 1, idx + 2)
+    DISPLAY "subMinor:", subMinor
+  END IF
+  RETURN fversion, subMinor
+END FUNCTION
+
+FUNCTION printStderr(errstr STRING)
+  DEFINE ch base.Channel
+  LET ch = base.Channel.create()
+  CALL ch.openFile("<stderr>", "w")
+  CALL ch.writeLine(errstr)
+  CALL ch.close()
+END FUNCTION
+
+FUNCTION myErr(errstr STRING)
+  CALL printStderr(
+      SFMT("ERROR:%1 stack:\n%2", errstr, base.Application.getStackTrace()))
+  EXIT PROGRAM 1
 END FUNCTION
